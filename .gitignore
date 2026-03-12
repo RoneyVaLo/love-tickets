@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 pnpm-lock.yaml
+.env
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +24,5 @@ pnpm-lock.yaml
 *.njsproj
 *.sln
 *.sw?
+
+.kiro
