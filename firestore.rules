@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isUsuarioPrincipal() {
+      return getUserRole() == 'usuario_principal';
+    }
+    
+    function isNovia() {
+      return getUserRole() == 'novia';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if false; // Solo admin puede modificar roles
+    }
+    
+    // Tickets collection
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated();
+      
+      // Crear tickets propuestos (solo Novia)
+      allow create: if isAuthenticated() 
+        && isNovia()
+        && request.resource.data.status == 'propuesto'
+        && request.resource.data.createdBy == request.auth.uid;
+      
+      // Actualizar tickets
+      allow update: if isAuthenticated() && (
+        // Novia puede canjear tickets pendientes
+        (isNovia() 
+          && resource.data.status == 'pendiente' 
+          && request.resource.data.status == 'canjeado')
+        ||
+        // Usuario Principal puede completar tickets canjeados
+        (isUsuarioPrincipal() 
+          && resource.data.status == 'canjeado' 
+          && request.resource.data.status == 'completado')
+        ||
+        // Novia puede confirmar o rechazar tickets completados
+        (isNovia() 
+          && resource.data.status == 'completado' 
+          && (request.resource.data.status == 'confirmado' 
+              || request.resource.data.status == 'canjeado'))
+        ||
+        // Usuario Principal puede aprobar propuestas
+        (isUsuarioPrincipal() 
+          && resource.data.status == 'propuesto' 
+          && request.resource.data.status == 'pendiente')
+      );
+      
+      // Eliminar tickets (solo Usuario Principal puede rechazar propuestas)
+      allow delete: if isAuthenticated() 
+        && isUsuarioPrincipal() 
+        && resource.data.status == 'propuesto';
+    }
+  }
+}
