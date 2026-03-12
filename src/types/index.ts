@@ -48,6 +48,7 @@ export interface UseAuthReturn {
   error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  signUp: (email: string, password: string, role: UserRole, displayName?: string) => Promise<void>;
 }
 
 // UseTickets Return Type

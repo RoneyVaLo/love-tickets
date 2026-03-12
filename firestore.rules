@@ -22,7 +22,13 @@ service cloud.firestore {
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
-      allow write: if false; // Solo admin puede modificar roles
+      // Permitir crear documento de usuario durante registro
+      allow create: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && (request.resource.data.role == 'usuario_principal' || request.resource.data.role == 'novia');
+      // Solo admin puede modificar roles después de la creación
+      allow update, delete: if false;
     }
     
     // Tickets collection

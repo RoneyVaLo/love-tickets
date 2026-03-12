@@ -1,28 +1,32 @@
-import { useState, FormEvent } from 'react';
-import type { User } from '../types';
-
-interface AuthComponentProps {
-  onAuthSuccess: (user: User) => void;
-}
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * AuthComponent
  * 
- * Componente de autenticación que proporciona un formulario de login.
+ * Componente de autenticación que proporciona formularios de login y registro.
  * 
  * Funcionalidades:
  * - Formulario de login con campos email y password
+ * - Formulario de registro con campos email, password, confirmación de password, nombre y rol
+ * - Alternar entre modo login y registro
  * - Mostrar errores de autenticación
  * - Mostrar estado de loading durante autenticación
  * - Aplicar estilos con TailwindCSS responsivos
  * 
  * Requirements: 1.1, 1.2, 1.3, 10.1, 10.2, 10.3, 10.4
  */
-export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
+export function AuthComponent() {
+  const [isLoginMode, setIsLoginMode] = useState<boolean>(true);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [displayName, setDisplayName] = useState<string>('');
+  const [role, setRole] = useState<'usuario_principal' | 'novia'>('novia');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const { signIn, signUp, loading } = useAuth();
+  const navigate = useNavigate();
 
   /**
    * Maneja el envío del formulario de login
@@ -39,17 +43,27 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
       return;
     }
 
-    setLoading(true);
+    if (!isLoginMode) {
+      // Validaciones adicionales para registro
+      if (password !== confirmPassword) {
+        setError('Las contraseñas no coinciden');
+        return;
+      }
+      
+      if (password.length < 6) {
+        setError('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+    }
 
     try {
-      // Aquí se integraría con useAuth hook
-      // Por ahora, simulamos la autenticación
-      // En la integración real, esto se manejará desde el componente padre
-      
-      // Placeholder para demostrar la estructura
-      // El componente padre pasará la lógica de autenticación
-      
-      setError('Integración pendiente con useAuth hook');
+      if (isLoginMode) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password, role, displayName || undefined);
+      }
+      // Redirect to dashboard on success
+      navigate('/dashboard');
     } catch (err: any) {
       // Manejo de errores específicos de Firebase
       if (err.code === 'auth/user-not-found') {
@@ -61,11 +75,20 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
       } else if (err.code === 'auth/network-request-failed') {
         setError('Error de conexión. Por favor, verifica tu internet.');
       } else {
-        setError(err.message || 'Error al iniciar sesión. Intenta nuevamente.');
+        setError(err.message || `Error al ${isLoginMode ? 'iniciar sesión' : 'registrarse'}. Intenta nuevamente.`);
       }
-    } finally {
-      setLoading(false);
     }
+  };
+
+  /**
+   * Alterna entre modo login y registro
+   */
+  const toggleMode = () => {
+    setIsLoginMode(!isLoginMode);
+    setError(null);
+    setPassword('');
+    setConfirmPassword('');
+    setDisplayName('');
   };
 
   return (
@@ -77,7 +100,7 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
             Tickets Canjeables
           </h2>
           <p className="mt-2 text-sm sm:text-base text-gray-600">
-            Inicia sesión para gestionar tus tickets
+            {isLoginMode ? 'Inicia sesión para gestionar tus tickets' : 'Crea tu cuenta para comenzar'}
           </p>
         </div>
 
@@ -87,6 +110,28 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
           onSubmit={handleSubmit}
         >
           <div className="space-y-4">
+            {/* Campo Nombre (solo en registro) */}
+            {!isLoginMode && (
+              <div>
+                <label 
+                  htmlFor="displayName" 
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Nombre (opcional)
+                </label>
+                <input
+                  id="displayName"
+                  name="displayName"
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  disabled={loading}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                  placeholder="Tu nombre"
+                />
+              </div>
+            )}
+
             {/* Campo Email */}
             <div>
               <label 
@@ -121,7 +166,7 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete={isLoginMode ? "current-password" : "new-password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -130,6 +175,53 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
                 placeholder="••••••••"
               />
             </div>
+
+            {/* Campo Confirmar Password (solo en registro) */}
+            {!isLoginMode && (
+              <div>
+                <label 
+                  htmlFor="confirmPassword" 
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Confirmar Contraseña
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+
+            {/* Campo Rol (solo en registro) */}
+            {!isLoginMode && (
+              <div>
+                <label 
+                  htmlFor="role" 
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Rol
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as 'usuario_principal' | 'novia')}
+                  disabled={loading}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                >
+                  <option value="novia">Novia</option>
+                  <option value="usuario_principal">Usuario Principal</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Mensaje de Error */}
@@ -187,11 +279,25 @@ export function AuthComponent({ onAuthSuccess }: AuthComponentProps) {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Iniciando sesión...
+                  {isLoginMode ? 'Iniciando sesión...' : 'Registrando...'}
                 </span>
               ) : (
-                'Iniciar Sesión'
+                isLoginMode ? 'Iniciar Sesión' : 'Registrarse'
               )}
+            </button>
+          </div>
+
+          {/* Toggle entre Login y Registro */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={toggleMode}
+              disabled={loading}
+              className="text-sm text-purple-600 hover:text-purple-700 font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              {isLoginMode 
+                ? '¿No tienes cuenta? Regístrate aquí' 
+                : '¿Ya tienes cuenta? Inicia sesión aquí'}
             </button>
           </div>
         </form>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { firebaseAuthService } from '../services/auth';
-import type { User, UseAuthReturn } from '../types';
+import type { User, UseAuthReturn, UserRole } from '../types';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 /**
@@ -77,6 +77,42 @@ export function useAuth(): UseAuthReturn {
   };
 
   /**
+   * Función para registrar un nuevo usuario
+   * @param email - Email del usuario
+   * @param password - Contraseña del usuario
+   * @param role - Rol del usuario ('usuario_principal' o 'novia')
+   * @param displayName - Nombre opcional del usuario
+   */
+  const signUp = async (
+    email: string,
+    password: string,
+    role: UserRole,
+    displayName?: string
+  ): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const userCredential = await firebaseAuthService.signUp(email, password, role, displayName);
+      const firebaseUser = userCredential.user;
+      
+      // Actualizar estado con usuario y rol
+      setUser({
+        id: firebaseUser.uid,
+        email: firebaseUser.email!,
+        role,
+        displayName: firebaseUser.displayName || undefined,
+      });
+      setUserRole(role);
+    } catch (err: any) {
+      setError(err.message || 'Error al registrar usuario');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
    * Effect para suscribirse a cambios de estado de autenticación
    * Se ejecuta al montar el componente y se limpia al desmontar
    */
@@ -121,5 +157,6 @@ export function useAuth(): UseAuthReturn {
     error,
     signIn,
     signOut,
+    signUp,
   };
 }
