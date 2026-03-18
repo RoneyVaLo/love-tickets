@@ -96,19 +96,19 @@ const TicketListComponent: React.FC<TicketListComponentProps> = ({
     <div className="w-full">
       {/* List header */}
       <div className="mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
           {getListTitle()}
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
           {filteredTickets.length} {filteredTickets.length === 1 ? 'ticket' : 'tickets'}
         </p>
       </div>
 
       {/* Tickets list or empty state */}
       {filteredTickets.length === 0 ? (
-        <div className="bg-gray-50 rounded-lg p-8 sm:p-12 text-center border border-gray-200">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 sm:p-12 text-center border border-gray-200 dark:border-gray-700">
           <svg
-            className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4"
+            className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 dark:text-gray-500 mb-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -121,7 +121,7 @@ const TicketListComponent: React.FC<TicketListComponentProps> = ({
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
             {getEmptyMessage()}
           </p>
         </div>

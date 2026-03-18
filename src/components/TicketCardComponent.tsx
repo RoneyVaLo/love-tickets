@@ -125,7 +125,7 @@ const TicketCardComponent: React.FC<TicketCardComponentProps> = ({
   const statusDisplay = getStatusDisplay(ticket.status);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
       {/* Header with status badge */}
       <div className="flex justify-between items-start mb-3">
         <span
@@ -137,13 +137,13 @@ const TicketCardComponent: React.FC<TicketCardComponentProps> = ({
 
       {/* Description */}
       <div className="mb-4">
-        <p className="text-gray-800 text-sm sm:text-base leading-relaxed">
+        <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-base leading-relaxed">
           {ticket.description}
         </p>
       </div>
 
       {/* Timestamps details */}
-      <div className="mb-4 space-y-1 text-xs sm:text-sm text-gray-600">
+      <div className="mb-4 space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <span>
             <span className="font-medium">Creado:</span> {formatDate(ticket.timestamps.createdAt)}
@@ -193,8 +193,8 @@ const TicketCardComponent: React.FC<TicketCardComponentProps> = ({
 
       {/* Rejection reason if present */}
       {ticket.rejectionReason && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-xs sm:text-sm text-red-800">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
+          <p className="text-xs sm:text-sm text-red-800 dark:text-red-300">
             <span className="font-medium">Razón de rechazo:</span> {ticket.rejectionReason}
           </p>
         </div>

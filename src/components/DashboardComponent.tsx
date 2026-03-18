@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTickets } from '../hooks/useTickets';
 import TicketListComponent from './TicketListComponent';
 import CreateTicketComponent from './CreateTicketComponent';
+import { ThemeSwitcher } from './ThemeSwitcher';
 import type { TicketAction } from '../types';
 import type { NotificationType } from '../hooks/useNotifications';
 
@@ -101,10 +102,10 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-400">Cargando dashboard...</p>
         </div>
       </div>
     );
@@ -123,28 +124,29 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 Dashboard
               </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
                 Bienvenido, {user?.displayName || user?.email}
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
                   {userRole === 'usuario_principal' ? 'Usuario Principal' : 'Novia'}
                 </span>
               </p>
             </div>
             
             {/* Navigation buttons */}
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <ThemeSwitcher />
               <Link
                 to="/history"
-                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -190,7 +192,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Action Error Display */}
         {actionError && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
@@ -206,7 +208,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-red-800">{actionError}</p>
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">{actionError}</p>
               </div>
               <div className="ml-auto pl-3">
                 <button
@@ -233,7 +235,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
             {/* Propose Ticket Section */}
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   Proponer Ticket
                 </h2>
                 {!showCreateTicket && (
