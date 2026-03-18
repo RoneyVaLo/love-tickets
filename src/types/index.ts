@@ -73,3 +73,6 @@ export interface UseHistoryReturn {
   filterByStatus: (status: TicketStatus | 'all') => void;
   currentFilter: TicketStatus | 'all';
 }
+
+// Theme types
+export type { Theme, ThemeContextValue } from './theme';
