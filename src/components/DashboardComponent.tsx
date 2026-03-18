@@ -5,6 +5,11 @@ import { useTickets } from '../hooks/useTickets';
 import TicketListComponent from './TicketListComponent';
 import CreateTicketComponent from './CreateTicketComponent';
 import type { TicketAction } from '../types';
+import type { NotificationType } from '../hooks/useNotifications';
+
+interface DashboardComponentProps {
+  addNotification?: (message: string, type?: NotificationType) => void;
+}
 
 /**
  * DashboardComponent - Main dashboard view organized by user role
@@ -18,7 +23,7 @@ import type { TicketAction } from '../types';
  * - Includes access to history for both roles
  * - Responsive design with TailwindCSS (mobile min 320px, desktop min 1024px)
  */
-const DashboardComponent: React.FC = () => {
+const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification }) => {
   const { user, userRole, signOut } = useAuth();
   const navigate = useNavigate();
   const {
@@ -32,7 +37,7 @@ const DashboardComponent: React.FC = () => {
     proposeTicket,
     approveProposal,
     rejectProposal,
-  } = useTickets(userRole);
+  } = useTickets(userRole, addNotification);
 
   const [showCreateTicket, setShowCreateTicket] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);

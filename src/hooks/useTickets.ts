@@ -1,22 +1,96 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { firestoreTicketService } from '../services/tickets';
 import type { Ticket, UseTicketsReturn, UserRole } from '../types';
+import type { NotificationType } from './useNotifications';
+
+type AddNotificationFn = (message: string, type?: NotificationType) => void;
+
+/**
+ * Detecta cambios entre el snapshot anterior y el nuevo y dispara notificaciones
+ * para el usuario actual basándose en qué cambió el otro usuario.
+ *
+ * La notificación le llega al usuario que RECIBE el efecto de la acción,
+ * no al que la ejecutó.
+ *
+ * Requirements: 3.3, 4.4, 6.4, 7.4, 7.5
+ */
+function detectAndNotify(
+  prev: Ticket[],
+  next: Ticket[],
+  userRole: UserRole,
+  addNotification: AddNotificationFn,
+  isFirstLoad: boolean
+) {
+  if (isFirstLoad) return;
+
+  const prevMap = new Map(prev.map((t) => [t.id, t]));
+
+  for (const ticket of next) {
+    const old = prevMap.get(ticket.id);
+
+    if (!old) {
+      // Ticket nuevo: solo le interesa al usuario_principal (req 6.4)
+      if (userRole === 'usuario_principal' && ticket.status === 'propuesto') {
+        addNotification(`Nueva propuesta: "${ticket.description}"`, 'info');
+      }
+      continue;
+    }
+
+    if (old.status === ticket.status) continue;
+
+    const { status, description } = ticket;
+
+    if (userRole === 'usuario_principal') {
+      // Req 3.3: Novia canjeó un ticket → notificar al Usuario Principal
+      if (old.status === 'pendiente' && status === 'canjeado') {
+        addNotification(`Ticket canjeado: "${description}"`, 'info');
+      }
+    }
+
+    if (userRole === 'novia') {
+      // Req 4.4: Usuario Principal completó un ticket → notificar a la Novia
+      if (old.status === 'canjeado' && status === 'completado') {
+        addNotification(`Ticket completado: "${description}"`, 'success');
+      }
+      // Req 7.4: Usuario Principal aprobó una propuesta → notificar a la Novia
+      if (old.status === 'propuesto' && status === 'pendiente') {
+        addNotification(`Propuesta aprobada: "${description}"`, 'success');
+      }
+    }
+  }
+
+  // Req 7.5: ticket propuesto desapareció → fue rechazado → notificar a la Novia
+  if (userRole === 'novia') {
+    const nextIds = new Set(next.map((t) => t.id));
+    for (const old of prev) {
+      if (old.status === 'propuesto' && !nextIds.has(old.id)) {
+        addNotification(`Propuesta rechazada: "${old.description}"`, 'warning');
+      }
+    }
+  }
+}
 
 /**
  * useTickets Hook
- * 
+ *
  * Custom hook para gestionar tickets con sincronización en tiempo real desde Firestore.
- * Proporciona funciones para todas las operaciones de tickets con validación de roles.
- * 
- * @param userRole - Rol del usuario actual ('usuario_principal' | 'novia')
- * @returns UseTicketsReturn con estado de tickets y funciones de operación
- * 
- * Requirements: 2.3, 3.1, 3.2, 4.2, 4.3, 5.2, 5.3, 5.5, 6.1, 6.2, 6.3, 7.2, 7.3, 9.3, 11.3, 11.4, 11.5
+ * Las notificaciones se disparan reactivamente desde el listener cuando el otro usuario
+ * realiza una acción, no desde las funciones de acción del usuario actual.
+ *
+ * Requirements: 2.3, 3.1, 3.2, 3.3, 4.2, 4.3, 4.4, 5.2, 5.3, 5.5, 6.1, 6.2, 6.3,
+ *               6.4, 7.2, 7.3, 7.4, 7.5, 9.3, 11.3, 11.4, 11.5
  */
-export function useTickets(userRole: UserRole | null): UseTicketsReturn {
+export function useTickets(
+  userRole: UserRole | null,
+  addNotification?: AddNotificationFn
+): UseTicketsReturn {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Ref para comparar snapshots sin re-crear el listener
+  const prevTicketsRef = useRef<Ticket[]>([]);
+  const isFirstLoadRef = useRef(true);
 
   // Suscribirse a cambios en tiempo real de todos los tickets
   useEffect(() => {
@@ -27,21 +101,32 @@ export function useTickets(userRole: UserRole | null): UseTicketsReturn {
 
     setLoading(true);
     setError(null);
+    isFirstLoadRef.current = true;
 
-    // Suscribirse a todos los tickets
     const unsubscribe = firestoreTicketService.subscribeToTickets(
       'all',
       (updatedTickets) => {
+        if (addNotification) {
+          detectAndNotify(
+            prevTicketsRef.current,
+            updatedTickets,
+            userRole,
+            addNotification,
+            isFirstLoadRef.current
+          );
+        }
+
+        prevTicketsRef.current = updatedTickets;
+        isFirstLoadRef.current = false;
         setTickets(updatedTickets);
         setLoading(false);
       }
     );
 
-    // Cleanup: cancelar suscripción al desmontar
     return () => {
       unsubscribe();
     };
-  }, [userRole]);
+  }, [userRole, addNotification]);
 
   /**
    * Canjear un ticket pendiente (solo Novia)
@@ -79,7 +164,7 @@ export function useTickets(userRole: UserRole | null): UseTicketsReturn {
         throw new Error(errorMessage);
       }
     },
-    [userRole, tickets]
+    [userRole, tickets, addNotification]
   );
 
   /**
@@ -118,7 +203,7 @@ export function useTickets(userRole: UserRole | null): UseTicketsReturn {
         throw new Error(errorMessage);
       }
     },
-    [userRole, tickets]
+    [userRole, tickets, addNotification]
   );
 
   /**
@@ -222,7 +307,7 @@ export function useTickets(userRole: UserRole | null): UseTicketsReturn {
         throw new Error(errorMessage);
       }
     },
-    [userRole]
+    [userRole, addNotification]
   );
 
   /**
@@ -257,7 +342,7 @@ export function useTickets(userRole: UserRole | null): UseTicketsReturn {
         throw new Error(errorMessage);
       }
     },
-    [userRole, tickets]
+    [userRole, tickets, addNotification]
   );
 
   /**
@@ -292,7 +377,7 @@ export function useTickets(userRole: UserRole | null): UseTicketsReturn {
         throw new Error(errorMessage);
       }
     },
-    [userRole, tickets]
+    [userRole, tickets, addNotification]
   );
 
   return {

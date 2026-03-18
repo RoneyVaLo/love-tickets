@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { useNotifications } from './hooks/useNotifications';
 import { AuthComponent } from './components/AuthComponent';
 import DashboardComponent from './components/DashboardComponent';
 import HistoryComponent from './components/HistoryComponent';
+import NotificationComponent from './components/NotificationComponent';
 
 /**
  * ProtectedRoute Component
@@ -55,6 +57,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
  */
 function App() {
   const { user, loading } = useAuth();
+  const { notifications, addNotification, removeNotification } = useNotifications();
 
   // Show loading state during initial authentication check
   if (loading) {
@@ -70,6 +73,10 @@ function App() {
 
   return (
     <BrowserRouter>
+      <NotificationComponent
+        notifications={notifications}
+        onDismiss={removeNotification}
+      />
       <Routes>
         {/* Login Route - Redirect to dashboard if already authenticated */}
         <Route
@@ -88,7 +95,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardComponent />
+              <DashboardComponent addNotification={addNotification} />
             </ProtectedRoute>
           }
         />
