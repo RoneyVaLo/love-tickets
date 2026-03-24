@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { firebaseAuthService } from '../services/auth';
 
 const FloatingDecorations = () => (
   <div className="pointer-events-none select-none" aria-hidden="true">
@@ -25,9 +26,23 @@ export function AuthComponent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<'usuario_principal' | 'novia'>('novia');
+  const [principalExists, setPrincipalExists] = useState(false);
+  const [checkingPrincipal, setCheckingPrincipal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn, signUp, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Al cambiar a modo registro, verificar si ya existe un usuario principal
+  useEffect(() => {
+    if (!isLoginMode) {
+      setCheckingPrincipal(true);
+      firebaseAuthService.checkPrincipalUserExists().then((exists) => {
+        setPrincipalExists(exists);
+        if (exists) setRole('novia');
+        setCheckingPrincipal(false);
+      });
+    }
+  }, [isLoginMode]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -145,7 +160,7 @@ export function AuthComponent() {
               </div>
             )}
 
-            {!isLoginMode && (
+            {!isLoginMode && !principalExists && !checkingPrincipal && (
               <div className="animate-slide-down delay-100">
                 <label htmlFor="role" className={labelClass}>Rol</label>
                 <select id="role" name="role"

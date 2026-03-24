@@ -7,7 +7,7 @@ import {
   type User as FirebaseUser,
   type UserCredential,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebaseConfig";
 import type { UserRole } from "../types";
 
@@ -156,6 +156,21 @@ export class FirebaseAuthService {
     callback: (user: FirebaseUser | null) => void,
   ): () => void {
     return firebaseOnAuthStateChanged(auth, callback);
+  }
+
+  /**
+   * Verifica si ya existe un usuario con rol 'usuario_principal' en Firestore
+   * @returns Promise<boolean> true si ya existe un usuario principal
+   */
+  async checkPrincipalUserExists(): Promise<boolean> {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("role", "==", "usuario_principal"));
+      const snapshot = await getDocs(q);
+      return !snapshot.empty;
+    } catch {
+      return false;
+    }
   }
 
   /**
