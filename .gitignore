@@ -27,3 +27,4 @@ pnpm-lock.yaml
 
 .kiro
 package-lock.json
+scripts/
