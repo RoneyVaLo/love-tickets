@@ -13,312 +13,209 @@ interface DashboardComponentProps {
 }
 
 /**
- * DashboardComponent - Main dashboard view organized by user role
- * 
- * Validates Requirements: 2.1, 4.1, 5.1, 6.1, 7.1, 8.1, 10.1, 10.2, 10.3, 10.4
- * 
- * Features:
- * - Organizes components based on user role
- * - For Novia: shows available tickets, completed tickets pending confirmation, button to propose tickets
- * - For Usuario Principal: shows redeemed tickets, proposed tickets pending approval
- * - Includes access to history for both roles
- * - Responsive design with TailwindCSS (mobile min 320px, desktop min 1024px)
+ * DashboardComponent — Romantic main dashboard
+ * Requirements: 2.1, 4.1, 5.1, 6.1, 7.1, 8.1, 10.1–10.4
  */
 const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification }) => {
   const { user, userRole, signOut } = useAuth();
   const navigate = useNavigate();
   const {
-    tickets,
-    loading,
-    error,
-    redeemTicket,
-    completeTicket,
-    confirmTicket,
-    rejectCompletion,
-    proposeTicket,
-    approveProposal,
-    rejectProposal,
+    tickets, loading, error,
+    redeemTicket, completeTicket, confirmTicket, rejectCompletion,
+    proposeTicket, approveProposal, rejectProposal,
   } = useTickets(userRole, addNotification);
 
-  const [showCreateTicket, setShowCreateTicket] = useState<boolean>(false);
+  const [showCreateTicket, setShowCreateTicket] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  /**
-   * Handle sign out
-   */
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/login');
-    } catch (err: any) {
-      setActionError(err.message || 'Error al cerrar sesión');
-    }
+    try { await signOut(); navigate('/login'); }
+    catch (err: any) { setActionError(err.message || 'Error al cerrar sesión'); }
   };
 
-  /**
-   * Handle ticket actions based on action type
-   */
   const handleTicketAction = async (ticketId: string, action: TicketAction) => {
     try {
       setActionError(null);
-
       switch (action) {
-        case 'redeem':
-          await redeemTicket(ticketId);
-          break;
-        case 'complete':
-          await completeTicket(ticketId);
-          break;
-        case 'confirm':
-          await confirmTicket(ticketId);
-          break;
-        case 'reject':
-          // 'reject' is used for rejecting completion (Novia rejects completed ticket)
-          await rejectCompletion(ticketId);
-          break;
-        case 'approve':
-          await approveProposal(ticketId);
-          break;
-        case 'rejectProposal':
-          // 'rejectProposal' is used for rejecting proposals (Usuario Principal rejects proposed ticket)
-          await rejectProposal(ticketId, 'Rechazado por el Usuario Principal');
-          break;
-        default:
-          throw new Error(`Acción desconocida: ${action}`);
+        case 'redeem':         await redeemTicket(ticketId); break;
+        case 'complete':       await completeTicket(ticketId); break;
+        case 'confirm':        await confirmTicket(ticketId); break;
+        case 'reject':         await rejectCompletion(ticketId); break;
+        case 'approve':        await approveProposal(ticketId); break;
+        case 'rejectProposal': await rejectProposal(ticketId, 'Rechazado por el Usuario Principal'); break;
+        default: throw new Error(`Acción desconocida: ${action}`);
       }
     } catch (err: any) {
       setActionError(err.message || 'Error al realizar la acción');
     }
   };
 
-  /**
-   * Handle ticket proposal submission
-   */
   const handleProposeTicket = async (description: string) => {
     await proposeTicket(description);
     setShowCreateTicket(false);
   };
 
-  // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Cargando dashboard...</p>
+      <div className="grain min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+        <div className="text-center animate-fade-in">
+          <div className="w-12 h-12 rounded-full border-4 border-rose-200 dark:border-rose-700 border-t-rose-600 dark:border-t-rose-300 animate-spin-slow mx-auto mb-4" />
+          <p className="font-serif italic text-lg text-stone-400 dark:text-rose-300">
+            Cargando tus tickets...
+          </p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <h3 className="text-red-800 font-semibold mb-2">Error</h3>
-          <p className="text-red-600 text-sm">{error}</p>
+      <div className="grain min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+        <div className="rounded-2xl p-8 max-w-md text-center bg-white/80 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 shadow-xl">
+          <span className="text-4xl mb-3 block">💔</span>
+          <h3 className="font-display text-xl font-semibold mb-2 text-rose-900 dark:text-rose-100">Algo salió mal</h3>
+          <p className="font-serif italic text-sm text-stone-400 dark:text-rose-300">{error}</p>
         </div>
       </div>
     );
   }
 
+  const isNovia = userRole === 'novia';
+  const isUsuarioPrincipal = userRole === 'usuario_principal';
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                Dashboard
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
-                Bienvenido, {user?.displayName || user?.email}
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
-                  {userRole === 'usuario_principal' ? 'Usuario Principal' : 'Novia'}
-                </span>
-              </p>
+    <div className="grain min-h-screen bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 bg-rose-50/95 dark:bg-stone-950/95 border-b border-rose-200/60 dark:border-rose-900/60 backdrop-blur-md shadow-sm shadow-rose-900/8 dark:shadow-rose-900/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+
+            {/* Brand */}
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-2xl animate-pulse-soft flex-shrink-0 text-rose-600 dark:text-rose-300">♥</span>
+              <div className="min-w-0">
+                <h1 className="font-display text-xl font-semibold leading-tight truncate text-rose-900 dark:text-rose-100">
+                  Tickets Canjeables
+                </h1>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <span className="font-sans text-xs truncate text-stone-400 dark:text-rose-300">
+                    {user?.displayName || user?.email}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-sans text-xs font-bold uppercase tracking-wider bg-rose-100 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200">
+                    {isNovia ? '💕 Novia' : '🎩 Principal'}
+                  </span>
+                </div>
+              </div>
             </div>
-            
-            {/* Navigation buttons */}
-            <div className="flex items-center gap-2">
+
+            {/* Nav */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               <ThemeSwitcher />
-              <Link
-                to="/history"
-                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Ver Histórico
+              <Link to="/history"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-sans text-sm font-semibold bg-white/70 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200 hover:bg-white dark:hover:bg-rose-900/50 hover:border-rose-400 dark:hover:border-rose-500 transition-all duration-200">
+                <span>📜</span><span>Histórico</span>
               </Link>
-              
-              <button
-                onClick={handleSignOut}
-                className="inline-flex items-center justify-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                Cerrar Sesión
+              <Link to="/history" aria-label="Histórico"
+                className="sm:hidden inline-flex items-center px-2.5 py-2 rounded-xl font-sans text-sm bg-white/70 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200 hover:bg-white dark:hover:bg-rose-900/50 transition-all duration-200">
+                <span>📜</span>
+              </Link>
+              <button onClick={handleSignOut}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-sans text-sm bg-transparent border border-transparent text-stone-400 dark:text-rose-300 hover:bg-rose-100/60 dark:hover:bg-rose-900/40 hover:text-rose-700 dark:hover:text-rose-100 transition-all duration-200">
+                <span>↩</span>
+                <span className="hidden sm:inline">Salir</span>
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Action Error Display */}
+      {/* ── Main ── */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* Action error */}
         {actionError && (
-          <div className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-red-800 dark:text-red-300">{actionError}</p>
-              </div>
-              <div className="ml-auto pl-3">
-                <button
-                  onClick={() => setActionError(null)}
-                  className="inline-flex text-red-400 hover:text-red-600"
-                >
-                  <span className="sr-only">Cerrar</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl text-sm mb-6 animate-slide-down bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300" role="alert">
+            <span className="flex-shrink-0 text-base">⚠</span>
+            <p className="flex-1 font-sans">{actionError}</p>
+            <button onClick={() => setActionError(null)} className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity">✕</button>
           </div>
         )}
 
-        {/* Role-specific content */}
-        {userRole === 'novia' ? (
-          <div className="space-y-8">
-            {/* Propose Ticket Section */}
-            <section>
+        {/* ── Novia view ── */}
+        {isNovia && (
+          <div className="space-y-10">
+            <section className="animate-fade-up">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  Proponer Ticket
-                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">💌</span>
+                  <h2 className="font-display text-2xl font-semibold text-rose-900 dark:text-rose-100">Proponer Ticket</h2>
+                </div>
                 {!showCreateTicket && (
-                  <button
-                    onClick={() => setShowCreateTicket(true)}
-                    className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm"
-                  >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Nuevo Ticket
+                  <button onClick={() => setShowCreateTicket(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-md shadow-rose-700/25 hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200">
+                    <span>+</span> Nuevo
                   </button>
                 )}
               </div>
-              
               {showCreateTicket && (
-                <div className="mb-6">
+                <div className="animate-slide-down">
                   <CreateTicketComponent onSubmit={handleProposeTicket} />
-                  <button
-                    onClick={() => setShowCreateTicket(false)}
-                    className="mt-4 text-sm text-gray-600 hover:text-gray-800 underline"
-                  >
-                    Cancelar
+                  <button onClick={() => setShowCreateTicket(false)}
+                    className="mt-3 font-sans text-sm text-stone-400 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-200 transition-colors">
+                    ✕ Cancelar
                   </button>
                 </div>
               )}
             </section>
 
-            {/* Available Tickets Section */}
-            <section>
-              <TicketListComponent
-                tickets={tickets}
-                userRole={userRole}
-                onTicketAction={handleTicketAction}
-                listType="available"
-              />
+            {/* Divider */}
+            <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <span className="text-base">✦</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+            </div>
+
+            <section className="animate-fade-up delay-100">
+              <TicketListComponent tickets={tickets} userRole={userRole} onTicketAction={handleTicketAction} listType="available" />
             </section>
 
-            {/* Completed Tickets Pending Confirmation Section */}
-            <section>
-              <TicketListComponent
-                tickets={tickets}
-                userRole={userRole}
-                onTicketAction={handleTicketAction}
-                listType="completed"
-              />
+            <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <span className="text-base">✦</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+            </div>
+
+            <section className="animate-fade-up delay-200">
+              <TicketListComponent tickets={tickets} userRole={userRole} onTicketAction={handleTicketAction} listType="completed" />
             </section>
           </div>
-        ) : userRole === 'usuario_principal' ? (
-          <div className="space-y-8">
-            {/* Proposed Tickets Pending Approval Section */}
-            <section>
-              <TicketListComponent
-                tickets={tickets}
-                userRole={userRole}
-                onTicketAction={handleTicketAction}
-                listType="proposed"
-              />
+        )}
+
+        {/* ── Usuario Principal view ── */}
+        {isUsuarioPrincipal && (
+          <div className="space-y-10">
+            <section className="animate-fade-up">
+              <TicketListComponent tickets={tickets} userRole={userRole} onTicketAction={handleTicketAction} listType="proposed" />
             </section>
 
-            {/* Redeemed Tickets Section */}
-            <section>
-              <TicketListComponent
-                tickets={tickets}
-                userRole={userRole}
-                onTicketAction={handleTicketAction}
-                listType="redeemed"
-              />
+            <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <span className="text-base">✦</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+            </div>
+
+            <section className="animate-fade-up delay-100">
+              <TicketListComponent tickets={tickets} userRole={userRole} onTicketAction={handleTicketAction} listType="redeemed" />
             </section>
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Rol de usuario no reconocido</p>
+        )}
+
+        {/* Unknown role */}
+        {!isNovia && !isUsuarioPrincipal && (
+          <div className="flex flex-col items-center justify-center py-12 px-8 text-center rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20">
+            <span className="text-4xl mb-3">🤔</span>
+            <p className="font-serif italic text-stone-400 dark:text-rose-300">Rol de usuario no reconocido</p>
           </div>
         )}
       </main>

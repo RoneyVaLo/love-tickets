@@ -7,201 +7,136 @@ interface TicketCardComponentProps {
   onAction: (action: TicketAction) => void;
 }
 
+const STATUS_CONFIG: Record<string, { label: string; icon: string; classes: string }> = {
+  pendiente:  { label: 'Pendiente',  icon: '🎀', classes: 'bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-200 border border-sky-200 dark:border-sky-700' },
+  canjeado:   { label: 'Canjeado',   icon: '🌹', classes: 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-200 border border-amber-200 dark:border-amber-700' },
+  completado: { label: 'Completado', icon: '✨', classes: 'bg-violet-50 dark:bg-violet-900/40 text-violet-700 dark:text-violet-200 border border-violet-200 dark:border-violet-700' },
+  confirmado: { label: 'Confirmado', icon: '💚', classes: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700' },
+  propuesto:  { label: 'Propuesto',  icon: '💌', classes: 'bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-200 border border-rose-200 dark:border-rose-700' },
+};
+
 /**
- * TicketCardComponent - Displays individual ticket cards with action buttons
- * 
- * Validates Requirements: 2.2, 8.3, 10.1, 10.2, 10.3, 10.4
- * 
- * Features:
- * - Shows ticket description and details (status, timestamps)
- * - Displays action buttons based on user role and ticket status
- * - Responsive design with TailwindCSS (mobile min 320px, desktop min 1024px)
+ * TicketCardComponent — Romantic ticket card
+ * Requirements: 2.2, 8.3, 10.1–10.4
  */
-const TicketCardComponent: React.FC<TicketCardComponentProps> = ({
-  ticket,
-  userRole,
-  onAction,
-}) => {
-  // Format timestamp for display
+const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userRole, onAction }) => {
   const formatDate = (timestamp: any): string => {
-    if (!timestamp) return 'N/A';
-    
+    if (!timestamp) return '—';
     try {
-      // Handle Firestore Timestamp
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      return 'N/A';
-    }
+      return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch { return '—'; }
   };
 
-  // Get status display text and color
-  const getStatusDisplay = (status: string): { text: string; colorClass: string } => {
-    const statusMap: Record<string, { text: string; colorClass: string }> = {
-      pendiente: { text: 'Pendiente', colorClass: 'bg-blue-100 text-blue-800' },
-      canjeado: { text: 'Canjeado', colorClass: 'bg-yellow-100 text-yellow-800' },
-      completado: { text: 'Completado', colorClass: 'bg-purple-100 text-purple-800' },
-      confirmado: { text: 'Confirmado', colorClass: 'bg-green-100 text-green-800' },
-      propuesto: { text: 'Propuesto', colorClass: 'bg-gray-100 text-gray-800' },
-    };
-    return statusMap[status] || { text: status, colorClass: 'bg-gray-100 text-gray-800' };
-  };
+  const status = STATUS_CONFIG[ticket.status] ?? { label: ticket.status, icon: '•', classes: 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700' };
 
-  // Determine which action buttons to show based on role and status
-  const getActionButtons = (): React.ReactElement | null => {
-    // Novia + pendiente ticket → "Canjear" button
+  const timestamps: { label: string; value: any }[] = [
+    { label: 'Creado',     value: ticket.timestamps.createdAt },
+    { label: 'Canjeado',   value: ticket.timestamps.redeemedAt },
+    { label: 'Completado', value: ticket.timestamps.completedAt },
+    { label: 'Confirmado', value: ticket.timestamps.confirmedAt },
+    { label: 'Propuesto',  value: ticket.timestamps.proposedAt },
+    { label: 'Aprobado',   value: ticket.timestamps.approvedAt },
+  ].filter(t => t.value);
+
+  const renderActions = () => {
     if (userRole === 'novia' && ticket.status === 'pendiente') {
       return (
-        <button
-          onClick={() => onAction('redeem')}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          Canjear
+        <button onClick={() => onAction('redeem')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-md shadow-rose-700/25 hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200">
+          <span>🎀</span> Canjear Ticket
         </button>
       );
     }
-
-    // Usuario Principal + canjeado ticket → "Completar" button
     if (userRole === 'usuario_principal' && ticket.status === 'canjeado') {
       return (
-        <button
-          onClick={() => onAction('complete')}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-        >
-          Completar
+        <button onClick={() => onAction('complete')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-md shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all duration-200">
+          <span>✨</span> Marcar Completado
         </button>
       );
     }
-
-    // Novia + completado ticket → "Confirmar" and "Rechazar" buttons
     if (userRole === 'novia' && ticket.status === 'completado') {
       return (
-        <div className="flex flex-col sm:flex-row gap-2">
-          <button
-            onClick={() => onAction('confirm')}
-            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-          >
-            Confirmar
+        <div className="flex gap-2">
+          <button onClick={() => onAction('confirm')}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-md shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-200">
+            <span>💚</span> Confirmar
           </button>
-          <button
-            onClick={() => onAction('reject')}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-          >
-            Rechazar
+          <button onClick={() => onAction('reject')}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 text-white shadow-md shadow-red-600/25 hover:-translate-y-0.5 transition-all duration-200">
+            <span>✕</span> Rechazar
           </button>
         </div>
       );
     }
-
-    // Usuario Principal + propuesto ticket → "Aprobar" and "Rechazar" buttons
     if (userRole === 'usuario_principal' && ticket.status === 'propuesto') {
       return (
-        <div className="flex flex-col sm:flex-row gap-2">
-          <button
-            onClick={() => onAction('approve')}
-            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-          >
-            Aprobar
+        <div className="flex gap-2">
+          <button onClick={() => onAction('approve')}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-md shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-200">
+            <span>💚</span> Aprobar
           </button>
-          <button
-            onClick={() => onAction('rejectProposal')}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-          >
-            Rechazar
+          <button onClick={() => onAction('rejectProposal')}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 text-white shadow-md shadow-red-600/25 hover:-translate-y-0.5 transition-all duration-200">
+            <span>✕</span> Rechazar
           </button>
         </div>
       );
     }
-
     return null;
   };
 
-  const statusDisplay = getStatusDisplay(ticket.status);
+  const actions = renderActions();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-      {/* Header with status badge */}
-      <div className="flex justify-between items-start mb-3">
-        <span
-          className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${statusDisplay.colorClass}`}
-        >
-          {statusDisplay.text}
+    <div className="rounded-2xl p-5 animate-fade-up bg-white/80 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-800 shadow-md shadow-rose-900/8 dark:shadow-rose-900/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-900/12 dark:hover:shadow-rose-900/40 transition-all duration-300 backdrop-blur-sm">
+
+      {/* Status badge */}
+      <div className="mb-3">
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-sans text-xs font-bold uppercase tracking-wider ${status.classes}`}>
+          <span>{status.icon}</span>
+          {status.label}
         </span>
       </div>
 
       {/* Description */}
-      <div className="mb-4">
-        <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-base leading-relaxed">
-          {ticket.description}
-        </p>
-      </div>
+      <p className="font-serif text-[1.0625rem] leading-relaxed mb-4 text-stone-800 dark:text-rose-50">
+        {ticket.description}
+      </p>
 
-      {/* Timestamps details */}
-      <div className="mb-4 space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-        <div className="flex flex-wrap gap-x-4 gap-y-1">
-          <span>
-            <span className="font-medium">Creado:</span> {formatDate(ticket.timestamps.createdAt)}
-          </span>
-        </div>
-        
-        {ticket.timestamps.redeemedAt && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Canjeado:</span> {formatDate(ticket.timestamps.redeemedAt)}
-            </span>
-          </div>
-        )}
-        
-        {ticket.timestamps.completedAt && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Completado:</span> {formatDate(ticket.timestamps.completedAt)}
-            </span>
-          </div>
-        )}
-        
-        {ticket.timestamps.confirmedAt && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Confirmado:</span> {formatDate(ticket.timestamps.confirmedAt)}
-            </span>
-          </div>
-        )}
-        
-        {ticket.timestamps.proposedAt && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Propuesto:</span> {formatDate(ticket.timestamps.proposedAt)}
-            </span>
-          </div>
-        )}
-        
-        {ticket.timestamps.approvedAt && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Aprobado:</span> {formatDate(ticket.timestamps.approvedAt)}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Rejection reason if present */}
-      {ticket.rejectionReason && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
-          <p className="text-xs sm:text-sm text-red-800 dark:text-red-300">
-            <span className="font-medium">Razón de rechazo:</span> {ticket.rejectionReason}
-          </p>
+      {/* Timestamps */}
+      {timestamps.length > 0 && (
+        <div className="mb-4 space-y-1">
+          {timestamps.map(({ label, value }) => (
+            <div key={label} className="flex items-center gap-2 text-xs">
+              <span className="text-amber-400 dark:text-amber-400 text-[0.6rem]">✦</span>
+              <span className="font-sans font-bold uppercase tracking-wider text-[0.7rem] text-stone-500 dark:text-rose-300">{label}:</span>
+              <span className="font-serif italic text-stone-500 dark:text-rose-200">{formatDate(value)}</span>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Action buttons */}
-      {getActionButtons()}
+      {/* Rejection reason */}
+      {ticket.rejectionReason && (
+        <div className="mb-4 px-3 py-2 rounded-xl text-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200">
+          <span className="font-sans font-bold text-xs uppercase tracking-wider">Motivo de rechazo: </span>
+          <span className="font-serif italic">{ticket.rejectionReason}</span>
+        </div>
+      )}
+
+      {/* Actions */}
+      {actions && (
+        <>
+          <div className="flex items-center gap-3 my-4 text-amber-500 dark:text-amber-400">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+            <span className="text-[0.6rem]">✦</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+          </div>
+          {actions}
+        </>
+      )}
     </div>
   );
 };

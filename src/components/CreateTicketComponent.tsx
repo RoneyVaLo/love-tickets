@@ -5,79 +5,38 @@ interface CreateTicketComponentProps {
   onSubmit: (description: string) => Promise<void>;
 }
 
+const MIN_LENGTH = 5;
+const MAX_LENGTH = 200;
+
 /**
- * CreateTicketComponent - Form for proposing new tickets
- * 
- * Validates Requirements: 6.1, 6.2, 11.1, 11.2, 10.1, 10.2, 10.3, 10.4
- * 
- * Features:
- * - Form for creating proposed tickets
- * - Description validation (5-200 characters)
- * - Display validation errors
- * - Responsive design with TailwindCSS (mobile min 320px, desktop min 1024px)
+ * CreateTicketComponent — Romantic ticket proposal form
+ * Requirements: 6.1, 6.2, 11.1, 11.2, 10.1–10.4
  */
 const CreateTicketComponent: React.FC<CreateTicketComponentProps> = ({ onSubmit }) => {
-  const [description, setDescription] = useState<string>('');
+  const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [success, setSuccess] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  // Validation constants
-  const MIN_LENGTH = 5;
-  const MAX_LENGTH = 200;
-
-  /**
-   * Validates ticket description
-   * Requirements: 11.1, 11.2
-   */
-  const validateDescription = (desc: string): { valid: boolean; error?: string } => {
-    // Check if empty or only whitespace
-    if (!desc || desc.trim().length === 0) {
-      return { valid: false, error: 'La descripción es requerida' };
-    }
-
-    // Check minimum length
-    if (desc.length < MIN_LENGTH) {
-      return { valid: false, error: `La descripción debe tener al menos ${MIN_LENGTH} caracteres` };
-    }
-
-    // Check maximum length
-    if (desc.length > MAX_LENGTH) {
-      return { valid: false, error: `La descripción no puede exceder ${MAX_LENGTH} caracteres` };
-    }
-
-    return { valid: true };
+  const validate = (desc: string) => {
+    if (!desc.trim()) return 'La descripción es requerida';
+    if (desc.length < MIN_LENGTH) return `Mínimo ${MIN_LENGTH} caracteres`;
+    if (desc.length > MAX_LENGTH) return `Máximo ${MAX_LENGTH} caracteres`;
+    return null;
   };
 
-  /**
-   * Handles form submission
-   * Requirements: 6.1, 6.2
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Clear previous messages
     setError(null);
     setSuccess(false);
-
-    // Validate description
-    const validation = validateDescription(description);
-    if (!validation.valid) {
-      setError(validation.error || 'Error de validación');
-      return;
-    }
-
+    const validationError = validate(description);
+    if (validationError) { setError(validationError); return; }
     setLoading(true);
-
     try {
       await onSubmit(description);
-      
-      // Success - clear form and show success message
       setDescription('');
       setSuccess(true);
-      
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => setSuccess(false), 3500);
     } catch (err: any) {
       setError(err.message || 'Error al crear el ticket. Intenta nuevamente.');
     } finally {
@@ -85,183 +44,95 @@ const CreateTicketComponent: React.FC<CreateTicketComponentProps> = ({ onSubmit 
     }
   };
 
-  /**
-   * Handles description input change with real-time validation feedback
-   */
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setDescription(value);
-    
-    // Clear error when user starts typing
-    if (error) {
-      setError(null);
-    }
-  };
-
-  // Calculate character count and validation status
   const charCount = description.length;
-  const isValid = charCount >= MIN_LENGTH && charCount <= MAX_LENGTH;
-  const showCharCount = charCount > 0;
+  const charStatus = charCount === 0 ? 'empty'
+    : charCount < MIN_LENGTH ? 'short'
+    : charCount > MAX_LENGTH ? 'over'
+    : 'valid';
+
+  const charHintClass = charStatus === 'short' ? 'text-amber-600 dark:text-amber-300'
+    : charStatus === 'over'  ? 'text-red-600 dark:text-red-300'
+    : charStatus === 'valid' ? 'text-emerald-600 dark:text-emerald-300'
+    : 'text-stone-400 dark:text-rose-400';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+    <div className="rounded-2xl p-6 animate-fade-up bg-white/80 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-800 shadow-md shadow-rose-900/8 dark:shadow-rose-900/30 backdrop-blur-sm">
+
       {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-          Proponer Nuevo Ticket
-        </h3>
-        <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+      <div className="mb-5">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xl">💌</span>
+          <h3 className="font-display text-xl font-semibold text-rose-900 dark:text-rose-100">
+            Proponer Nuevo Ticket
+          </h3>
+        </div>
+        <p className="font-serif italic text-sm text-stone-400 dark:text-rose-300">
           Describe la actividad que te gustaría proponer
         </p>
       </div>
 
-      {/* Form */}
+      {/* Divider */}
+      <div className="flex items-center gap-3 mb-5 text-amber-500 dark:text-amber-400">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+        <span className="text-[0.6rem]">✦</span>
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Description textarea */}
         <div>
-          <label 
-            htmlFor="description" 
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
+          <label htmlFor="description" className="block font-sans text-xs font-bold uppercase tracking-widest mb-1.5 text-rose-700 dark:text-rose-300">
             Descripción
           </label>
           <textarea
-            id="description"
-            name="description"
-            rows={4}
+            id="description" name="description" rows={4}
             value={description}
-            onChange={handleDescriptionChange}
+            onChange={e => { setDescription(e.target.value); if (error) setError(null); }}
             disabled={loading}
             placeholder="Ej: Cena romántica en casa con velas y música..."
-            className={`
-              w-full px-3 py-2 border rounded-lg 
-              placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white
-              bg-white dark:bg-gray-700 text-sm sm:text-base
-              focus:outline-none focus:ring-2 focus:border-transparent
-              disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed
-              transition-colors resize-none
-              ${error ? 'border-red-300 dark:border-red-600 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500'}
-            `}
+            className="w-full px-4 py-3 rounded-xl text-sm font-sans resize-none bg-white/70 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-700 text-stone-800 dark:text-rose-100 placeholder:text-stone-400 dark:placeholder:text-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-400/40 dark:focus:ring-rose-400/30 focus:border-rose-400 dark:focus:border-rose-500 focus:bg-white dark:focus:bg-rose-950/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           />
-          
-          {/* Character count */}
-          {showCharCount && (
-            <div className="mt-1 flex justify-between items-center text-xs">
-              <span className={`
-                ${charCount < MIN_LENGTH ? 'text-orange-600' : ''}
-                ${isValid ? 'text-green-600' : ''}
-                ${charCount > MAX_LENGTH ? 'text-red-600' : ''}
-              `}>
-                {charCount < MIN_LENGTH && `Mínimo ${MIN_LENGTH} caracteres`}
-                {isValid && 'Longitud válida'}
-                {charCount > MAX_LENGTH && `Máximo ${MAX_LENGTH} caracteres`}
+          {charCount > 0 && (
+            <div className={`flex justify-between items-center mt-1.5 text-xs font-sans ${charHintClass}`}>
+              <span>
+                {charStatus === 'short' && `Mínimo ${MIN_LENGTH} caracteres`}
+                {charStatus === 'valid' && '✓ Longitud válida'}
+                {charStatus === 'over'  && `Máximo ${MAX_LENGTH} caracteres`}
               </span>
-              <span className={`
-                ${charCount > MAX_LENGTH ? 'text-red-600 font-semibold' : 'text-gray-500'}
-              `}>
-                {charCount}/{MAX_LENGTH}
-              </span>
+              <span className="font-bold">{charCount}/{MAX_LENGTH}</span>
             </div>
           )}
         </div>
 
-        {/* Error message */}
         {error && (
-          <div className="rounded-lg bg-red-50 p-3 border border-red-200">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg 
-                  className="h-5 w-5 text-red-400" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path 
-                    fillRule="evenodd" 
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
-                    clipRule="evenodd" 
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-xs sm:text-sm font-medium text-red-800">
-                  {error}
-                </p>
-              </div>
-            </div>
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl text-sm animate-slide-down bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300" role="alert">
+            <span className="flex-shrink-0">⚠</span>
+            <p className="font-sans">{error}</p>
           </div>
         )}
 
-        {/* Success message */}
         {success && (
-          <div className="rounded-lg bg-green-50 p-3 border border-green-200">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg 
-                  className="h-5 w-5 text-green-400" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path 
-                    fillRule="evenodd" 
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
-                    clipRule="evenodd" 
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-xs sm:text-sm font-medium text-green-800">
-                  ¡Ticket propuesto exitosamente!
-                </p>
-              </div>
-            </div>
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl text-sm animate-slide-down bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300" role="status">
+            <span className="flex-shrink-0">💚</span>
+            <p className="font-sans">¡Ticket propuesto exitosamente!</p>
           </div>
         )}
 
-        {/* Submit button */}
-        <div className="flex flex-col sm:flex-row gap-2">
-          <button
-            type="submit"
-            disabled={loading || !description.trim()}
-            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
-          >
+        <div className="flex gap-3 pt-1">
+          <button type="submit" disabled={loading || !description.trim()}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-md shadow-rose-700/25 hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
             {loading ? (
-              <span className="flex items-center justify-center">
-                <svg 
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" 
-                  viewBox="0 0 24 24"
-                >
-                  <circle 
-                    className="opacity-25" 
-                    cx="12" 
-                    cy="12" 
-                    r="10" 
-                    stroke="currentColor" 
-                    strokeWidth="4"
-                  />
-                  <path 
-                    className="opacity-75" 
-                    fill="currentColor" 
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Creando...
-              </span>
+              <>
+                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin-slow" />
+                Enviando...
+              </>
             ) : (
-              'Proponer Ticket'
+              <><span>💌</span> Proponer Ticket</>
             )}
           </button>
-          
+
           {description.trim() && !loading && (
-            <button
-              type="button"
-              onClick={() => {
-                setDescription('');
-                setError(null);
-              }}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium text-sm sm:text-base"
-            >
+            <button type="button" onClick={() => { setDescription(''); setError(null); }}
+              className="px-4 py-2.5 rounded-xl font-sans font-semibold text-sm bg-white/70 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200 hover:bg-white dark:hover:bg-rose-900/50 hover:border-rose-400 dark:hover:border-rose-500 transition-all duration-200">
               Limpiar
             </button>
           )}

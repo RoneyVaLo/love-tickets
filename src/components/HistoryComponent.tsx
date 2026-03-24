@@ -6,183 +6,128 @@ import TicketCardComponent from './TicketCardComponent';
 import type { TicketStatus } from '../types';
 
 /**
- * HistoryComponent - Displays historical tickets with filtering
- * 
- * Validates Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 10.1, 10.2, 10.3, 10.4
- * 
- * Features:
- * - Shows list of historical tickets (canjeado, completado, confirmado)
- * - Implements filters by ticket status
- * - Displays tickets ordered by redeemedAt descending (most recent first)
- * - Responsive design with TailwindCSS (mobile min 320px, desktop min 1024px)
+ * HistoryComponent — Romantic ticket history with filters
+ * Requirements: 8.1–8.5, 10.1–10.4
  */
 const HistoryComponent: React.FC = () => {
   const { history, loading, error, filterByStatus, currentFilter } = useHistory();
   const { userRole } = useAuth();
 
-  // Handle filter change
-  const handleFilterChange = (status: TicketStatus | 'all') => {
-    filterByStatus(status);
+  const counts = {
+    all:        history.length,
+    canjeado:   history.filter(t => t.status === 'canjeado').length,
+    completado: history.filter(t => t.status === 'completado').length,
+    confirmado: history.filter(t => t.status === 'confirmado').length,
   };
 
-  // Filter button component for reusability
-  const FilterButton: React.FC<{
-    label: string;
-    value: TicketStatus | 'all';
-    count?: number;
-  }> = ({ label, value, count }) => {
-    const isActive = currentFilter === value;
-    return (
-      <button
-        onClick={() => handleFilterChange(value)}
-        className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-medium text-sm transition-colors ${
-          isActive
-            ? 'bg-blue-600 text-white shadow-md'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-        }`}
-      >
-        {label}
-        {count !== undefined && (
-          <span className="ml-1 text-xs opacity-80">({count})</span>
-        )}
-      </button>
-    );
-  };
+  const filters: { label: string; value: TicketStatus | 'all'; icon: string; count: number }[] = [
+    { label: 'Todos',       value: 'all',        icon: '✦', count: counts.all },
+    { label: 'Canjeados',   value: 'canjeado',   icon: '🌹', count: counts.canjeado },
+    { label: 'Completados', value: 'completado', icon: '✨', count: counts.completado },
+    { label: 'Confirmados', value: 'confirmado', icon: '💚', count: counts.confirmado },
+  ];
 
-  // Calculate counts for each filter
-  const getCounts = () => {
-    return {
-      all: history.length,
-      canjeado: history.filter((t) => t.status === 'canjeado').length,
-      completado: history.filter((t) => t.status === 'completado').length,
-      confirmado: history.filter((t) => t.status === 'confirmado').length,
-    };
-  };
-
-  const counts = getCounts();
-
-  // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando histórico...</p>
+      <div className="grain min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+        <div className="text-center animate-fade-in">
+          <div className="w-12 h-12 rounded-full border-4 border-rose-200 dark:border-rose-700 border-t-rose-600 dark:border-t-rose-300 animate-spin-slow mx-auto mb-4" />
+          <p className="font-serif italic text-lg text-stone-400 dark:text-rose-300">Cargando histórico...</p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <h3 className="text-red-800 font-semibold mb-2">Error</h3>
-          <p className="text-red-600 text-sm">{error}</p>
+      <div className="grain min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+        <div className="rounded-2xl p-8 max-w-md text-center bg-white/80 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 shadow-xl">
+          <span className="text-4xl mb-3 block">💔</span>
+          <h3 className="font-display text-xl font-semibold mb-2 text-rose-900 dark:text-rose-100">Error al cargar</h3>
+          <p className="font-serif italic text-sm text-stone-400 dark:text-rose-300">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              <svg
-                className="w-5 h-5 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Volver al Dashboard
+    <div className="grain min-h-screen bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 bg-rose-50/95 dark:bg-stone-950/95 border-b border-rose-200/60 dark:border-rose-900/60 backdrop-blur-md shadow-sm shadow-rose-900/8 dark:shadow-rose-900/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-sans text-sm bg-transparent border border-transparent text-stone-400 dark:text-rose-300 hover:bg-rose-100/60 dark:hover:bg-rose-900/40 hover:text-rose-700 dark:hover:text-rose-100 transition-all duration-200">
+              ← <span className="hidden sm:inline">Volver</span>
             </Link>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Histórico de Tickets
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            Revisa todos los tickets canjeados, completados y confirmados
-          </p>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            Filtrar por estado
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            <FilterButton label="Todos" value="all" count={counts.all} />
-            <FilterButton label="Canjeados" value="canjeado" count={counts.canjeado} />
-            <FilterButton label="Completados" value="completado" count={counts.completado} />
-            <FilterButton label="Confirmados" value="confirmado" count={counts.confirmado} />
-          </div>
-        </div>
-
-        {/* Tickets list */}
-        {history.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
-            <div className="text-gray-400 dark:text-gray-500 mb-4">
-              <svg
-                className="w-16 h-16 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📜</span>
+              <h1 className="font-display text-xl font-semibold text-rose-900 dark:text-rose-100">
+                Histórico de Tickets
+              </h1>
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              No hay tickets en el histórico
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* Subtitle */}
+        <p className="font-serif italic text-base mb-6 animate-fade-up text-stone-400 dark:text-rose-300">
+          Todos los momentos que han compartido juntos
+        </p>
+
+        {/* Filter tabs */}
+        <div className="rounded-2xl p-4 mb-8 animate-fade-up delay-100 bg-white/80 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-800 shadow-md shadow-rose-900/8 dark:shadow-rose-900/30 backdrop-blur-sm">
+          <p className="font-sans text-xs font-bold uppercase tracking-widest mb-3 text-rose-700 dark:text-rose-300">
+            Filtrar por estado
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {filters.map(f => (
+              <button key={f.value} onClick={() => filterByStatus(f.value)}
+                className={`px-3 py-1.5 rounded-full font-sans text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
+                  currentFilter === f.value
+                    ? 'bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white border-transparent shadow-md shadow-rose-700/25'
+                    : 'bg-white/60 dark:bg-rose-950/50 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700 hover:bg-white dark:hover:bg-rose-900/50 hover:border-rose-400 dark:hover:border-rose-500'
+                }`}>
+                <span className="mr-1">{f.icon}</span>
+                {f.label}
+                <span className="ml-1.5 opacity-70">({f.count})</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tickets */}
+        {history.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-8 text-center rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 animate-fade-up delay-200">
+            <span className="text-5xl mb-3 animate-pulse-soft">📜</span>
+            <h3 className="font-display text-lg font-semibold mb-1 text-rose-900 dark:text-rose-100">
+              Sin tickets en el histórico
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="font-serif italic text-sm text-stone-400 dark:text-rose-300">
               {currentFilter === 'all'
                 ? 'Los tickets canjeados aparecerán aquí'
                 : `No hay tickets con estado "${currentFilter}"`}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {history.map((ticket) => (
-              <TicketCardComponent
-                key={ticket.id}
-                ticket={ticket}
-                userRole={userRole || 'novia'}
-                onAction={() => {
-                  // Historical tickets don't have actions in this view
-                  // Actions are handled in other components (TicketListComponent)
-                }}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {history.map((ticket, i) => (
+                <div key={ticket.id} className="animate-fade-up" style={{ animationDelay: `${i * 0.06}s` }}>
+                  <TicketCardComponent ticket={ticket} userRole={userRole || 'novia'} onAction={() => {}} />
+                </div>
+              ))}
+            </div>
+            <p className="text-center mt-8 font-serif italic text-sm animate-fade-up text-stone-400 dark:text-rose-300">
+              {history.length} {history.length === 1 ? 'ticket' : 'tickets'}
+              {currentFilter !== 'all' && ` con estado "${currentFilter}"`}
+            </p>
+          </>
         )}
-
-        {/* Results count */}
-        {history.length > 0 && (
-          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            Mostrando {history.length} ticket{history.length !== 1 ? 's' : ''}
-            {currentFilter !== 'all' && ` con estado "${currentFilter}"`}
-          </div>
-        )}
-      </div>
+      </main>
     </div>
   );
 };

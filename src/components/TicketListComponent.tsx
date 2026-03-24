@@ -11,129 +11,55 @@ interface TicketListComponentProps {
   listType: ListType;
 }
 
+const LIST_CONFIG: Record<ListType, {
+  title: string; icon: string; statusFilter: string; emptyMessage: string; emptyIcon: string;
+}> = {
+  available: { title: 'Tickets Disponibles', icon: '🎀', statusFilter: 'pendiente',  emptyMessage: 'No hay tickets disponibles por ahora',                    emptyIcon: '🎀' },
+  redeemed:  { title: 'Tickets Canjeados',   icon: '🌹', statusFilter: 'canjeado',   emptyMessage: 'No hay tickets canjeados pendientes',                      emptyIcon: '🌹' },
+  completed: { title: 'Tickets Completados', icon: '✨', statusFilter: 'completado', emptyMessage: 'No hay tickets completados pendientes de confirmación',     emptyIcon: '✨' },
+  proposed:  { title: 'Tickets Propuestos',  icon: '💌', statusFilter: 'propuesto',  emptyMessage: 'No hay propuestas pendientes de aprobación',               emptyIcon: '💌' },
+};
+
 /**
- * TicketListComponent - Renders a filtered list of ticket cards
- * 
- * Validates Requirements: 2.1, 4.1, 5.1, 7.1, 10.1, 10.2, 10.3, 10.4
- * 
- * Features:
- * - Filters tickets based on listType and userRole
- * - Renders TicketCardComponent for each ticket
- * - Handles ticket actions and passes them to parent
- * - Responsive design with TailwindCSS (mobile min 320px, desktop min 1024px)
- * 
- * Filtering Logic:
- * - available: Shows pendiente tickets (for Novia to redeem)
- * - redeemed: Shows canjeado tickets (for Usuario Principal to complete)
- * - completed: Shows completado tickets (for Novia to confirm/reject)
- * - proposed: Shows propuesto tickets (for Usuario Principal to approve/reject)
+ * TicketListComponent — Romantic filtered ticket list
+ * Requirements: 2.1, 4.1, 5.1, 7.1, 10.1–10.4
  */
 const TicketListComponent: React.FC<TicketListComponentProps> = ({
-  tickets,
-  userRole,
-  onTicketAction,
-  listType,
+  tickets, userRole, onTicketAction, listType,
 }) => {
-  // Filter tickets based on listType
-  const filterTickets = (): Ticket[] => {
-    switch (listType) {
-      case 'available':
-        // Show pendiente tickets (Novia can redeem these)
-        return tickets.filter(ticket => ticket.status === 'pendiente');
-      
-      case 'redeemed':
-        // Show canjeado tickets (Usuario Principal can complete these)
-        return tickets.filter(ticket => ticket.status === 'canjeado');
-      
-      case 'completed':
-        // Show completado tickets (Novia can confirm/reject these)
-        return tickets.filter(ticket => ticket.status === 'completado');
-      
-      case 'proposed':
-        // Show propuesto tickets (Usuario Principal can approve/reject these)
-        return tickets.filter(ticket => ticket.status === 'propuesto');
-      
-      default:
-        return tickets;
-    }
-  };
-
-  const filteredTickets = filterTickets();
-
-  // Get list title based on listType and userRole
-  const getListTitle = (): string => {
-    switch (listType) {
-      case 'available':
-        return 'Tickets Disponibles';
-      case 'redeemed':
-        return 'Tickets Canjeados';
-      case 'completed':
-        return 'Tickets Completados';
-      case 'proposed':
-        return 'Tickets Propuestos';
-      default:
-        return 'Tickets';
-    }
-  };
-
-  // Get empty state message
-  const getEmptyMessage = (): string => {
-    switch (listType) {
-      case 'available':
-        return 'No hay tickets disponibles para canjear';
-      case 'redeemed':
-        return 'No hay tickets canjeados pendientes';
-      case 'completed':
-        return 'No hay tickets completados pendientes de confirmación';
-      case 'proposed':
-        return 'No hay tickets propuestos pendientes de aprobación';
-      default:
-        return 'No hay tickets';
-    }
-  };
+  const config = LIST_CONFIG[listType];
+  const filtered = tickets.filter(t => t.status === config.statusFilter);
 
   return (
-    <div className="w-full">
-      {/* List header */}
-      <div className="mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-          {getListTitle()}
-        </h2>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-          {filteredTickets.length} {filteredTickets.length === 1 ? 'ticket' : 'tickets'}
-        </p>
+    <div className="w-full animate-fade-up">
+      {/* Section header */}
+      <div className="flex items-center gap-3 mb-5">
+        <span className="text-2xl">{config.icon}</span>
+        <div>
+          <h2 className="font-display text-2xl font-semibold text-rose-900 dark:text-rose-100">{config.title}</h2>
+          <p className="font-sans text-xs mt-0.5 tracking-wider text-stone-400 dark:text-rose-300">
+            {filtered.length} {filtered.length === 1 ? 'ticket' : 'tickets'}
+          </p>
+        </div>
       </div>
 
-      {/* Tickets list or empty state */}
-      {filteredTickets.length === 0 ? (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 sm:p-12 text-center border border-gray-200 dark:border-gray-700">
-          <svg
-            className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 dark:text-gray-500 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-            {getEmptyMessage()}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 px-8 text-center rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20">
+          <span className="text-5xl mb-3 animate-pulse-soft">{config.emptyIcon}</span>
+          <p className="font-serif italic text-base text-stone-400 dark:text-rose-300">
+            {config.emptyMessage}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {filteredTickets.map((ticket) => (
-            <TicketCardComponent
-              key={ticket.id}
-              ticket={ticket}
-              userRole={userRole}
-              onAction={(action) => onTicketAction(ticket.id, action)}
-            />
+        <div className="grid grid-cols-1 gap-4">
+          {filtered.map((ticket, i) => (
+            <div key={ticket.id} className="animate-fade-up" style={{ animationDelay: `${i * 0.07}s` }}>
+              <TicketCardComponent
+                ticket={ticket}
+                userRole={userRole}
+                onAction={action => onTicketAction(ticket.id, action)}
+              />
+            </div>
           ))}
         </div>
       )}
