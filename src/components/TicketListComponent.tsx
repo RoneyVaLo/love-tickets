@@ -9,6 +9,7 @@ interface TicketListComponentProps {
   userRole: UserRole;
   onTicketAction: (ticketId: string, action: TicketAction) => void;
   listType: ListType;
+  weeklyLimitReached?: boolean;
 }
 
 const LIST_CONFIG: Record<ListType, {
@@ -25,7 +26,7 @@ const LIST_CONFIG: Record<ListType, {
  * Requirements: 2.1, 4.1, 5.1, 7.1, 10.1–10.4
  */
 const TicketListComponent: React.FC<TicketListComponentProps> = ({
-  tickets, userRole, onTicketAction, listType,
+  tickets, userRole, onTicketAction, listType, weeklyLimitReached = false,
 }) => {
   const config = LIST_CONFIG[listType];
   const filtered = tickets.filter(t => t.status === config.statusFilter);
@@ -154,6 +155,7 @@ const TicketListComponent: React.FC<TicketListComponentProps> = ({
                   ticket={ticket}
                   userRole={userRole}
                   onAction={action => onTicketAction(ticket.id, action)}
+                  weeklyLimitReached={weeklyLimitReached}
                 />
               </div>
             ))}

@@ -84,9 +84,26 @@ export function useTickets(
   userRole: UserRole | null,
   addNotification?: AddNotificationFn
 ): UseTicketsReturn {
+  const WEEKLY_REDEEM_LIMIT = 3;
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Cuenta cuántos tickets fueron canjeados en los últimos 7 días
+   */
+  const weeklyRedeemCount = tickets.filter((t) => {
+    if (!t.timestamps.redeemedAt) return false;
+    const redeemedAt = t.timestamps.redeemedAt.toDate
+      ? t.timestamps.redeemedAt.toDate()
+      : new Date(t.timestamps.redeemedAt as any);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return redeemedAt >= sevenDaysAgo;
+  }).length;
+
+  const weeklyLimitReached = weeklyRedeemCount >= WEEKLY_REDEEM_LIMIT;
 
   // Ref para comparar snapshots sin re-crear el listener
   const prevTicketsRef = useRef<Ticket[]>([]);
@@ -150,6 +167,11 @@ export function useTickets(
 
         if (ticket.status !== 'pendiente') {
           throw new Error('Solo se pueden canjear tickets pendientes');
+        }
+
+        // Validar límite semanal de canjes
+        if (weeklyLimitReached) {
+          throw new Error(`Has alcanzado el límite de ${WEEKLY_REDEEM_LIMIT} canjes por semana`);
         }
 
         // Actualizar estado a canjeado
@@ -384,6 +406,8 @@ export function useTickets(
     tickets,
     loading,
     error,
+    weeklyRedeemCount,
+    weeklyLimitReached,
     redeemTicket,
     completeTicket,
     confirmTicket,

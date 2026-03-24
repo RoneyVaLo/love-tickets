@@ -17,6 +17,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
   const navigate = useNavigate();
   const {
     tickets, loading, error,
+    weeklyLimitReached, weeklyRedeemCount,
     redeemTicket, completeTicket, confirmTicket, rejectCompletion,
     proposeTicket, approveProposal, rejectProposal,
   } = useTickets(userRole, addNotification);
@@ -97,6 +98,15 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-sans text-xs font-bold uppercase tracking-wider bg-rose-100 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200">
                     {isNovia ? '💕 Novia' : '🎩 Principal'}
                   </span>
+                  {isNovia && (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-sans text-xs font-bold uppercase tracking-wider border ${
+                      weeklyLimitReached
+                        ? 'bg-red-100 dark:bg-red-900/60 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300'
+                        : 'bg-amber-50 dark:bg-amber-900/40 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300'
+                    }`}>
+                      🎟 {weeklyRedeemCount}/3
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -163,7 +173,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
             </div>
 
             <section className="animate-fade-up delay-100">
-              <TicketListComponent tickets={tickets} userRole={userRole} onTicketAction={handleTicketAction} listType="available" />
+              <TicketListComponent tickets={tickets} userRole={userRole} onTicketAction={handleTicketAction} listType="available" weeklyLimitReached={weeklyLimitReached} />
             </section>
 
             <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">

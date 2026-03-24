@@ -56,6 +56,8 @@ export interface UseTicketsReturn {
   tickets: Ticket[];
   loading: boolean;
   error: string | null;
+  weeklyRedeemCount: number;
+  weeklyLimitReached: boolean;
   redeemTicket: (ticketId: string) => Promise<void>;
   completeTicket: (ticketId: string) => Promise<void>;
   confirmTicket: (ticketId: string) => Promise<void>;

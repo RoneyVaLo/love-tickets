@@ -5,6 +5,7 @@ interface TicketCardComponentProps {
   ticket: Ticket;
   userRole: UserRole;
   onAction: (action: TicketAction) => void;
+  weeklyLimitReached?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; accent: string; border: string; bg: string; darkBg: string; darkBorder: string; darkText: string; text: string }> = {
@@ -15,7 +16,7 @@ const STATUS_CONFIG: Record<string, { label: string; accent: string; border: str
   propuesto:  { label: 'Propuesto',  accent: 'text-rose-600 dark:text-rose-300',   border: 'border-rose-300 dark:border-rose-600',     bg: 'bg-rose-50',    darkBg: 'dark:bg-rose-950/60',   text: 'text-rose-700',   darkText: 'dark:text-rose-100',   darkBorder: '' },
 };
 
-const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userRole, onAction }) => {
+const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userRole, onAction, weeklyLimitReached = false }) => {
   const formatDate = (timestamp: any): string => {
     if (!timestamp) return '—';
     try {
@@ -41,10 +42,24 @@ const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userR
   const renderActions = () => {
     if (userRole === 'novia' && ticket.status === 'pendiente') {
       return (
-        <button onClick={() => onAction('redeem')}
-          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-sans font-bold text-xs tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-sm hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
-          Canjear
-        </button>
+        <div className="flex flex-col gap-1">
+          <button
+            onClick={() => !weeklyLimitReached && onAction('redeem')}
+            disabled={weeklyLimitReached}
+            title={weeklyLimitReached ? 'Límite semanal alcanzado (3/3)' : undefined}
+            className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-sans font-bold text-xs tracking-wide transition-all duration-200
+              ${weeklyLimitReached
+                ? 'bg-stone-300 dark:bg-stone-700 text-stone-500 dark:text-stone-400 cursor-not-allowed opacity-60'
+                : 'bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-sm hover:shadow-rose-700/40 hover:-translate-y-0.5 cursor-pointer'
+              }`}>
+            Canjear
+          </button>
+          {weeklyLimitReached && (
+            <p className="text-[0.55rem] text-center font-sans text-stone-500 dark:text-stone-400 leading-tight">
+              Límite semanal (3/3)
+            </p>
+          )}
+        </div>
       );
     }
     if (userRole === 'usuario_principal' && ticket.status === 'canjeado') {
