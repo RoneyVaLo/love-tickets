@@ -29,7 +29,7 @@ const HistoryComponent: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="grain min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+      <div className="grain min-h-screen flex items-center justify-center bg-rose-50 dark:bg-stone-900">
         <div className="text-center animate-fade-in">
           <div className="w-12 h-12 rounded-full border-4 border-rose-200 dark:border-rose-700 border-t-rose-600 dark:border-t-rose-300 animate-spin-slow mx-auto mb-4" />
           <p className="font-serif italic text-lg text-stone-400 dark:text-rose-300">Cargando histórico...</p>
@@ -40,7 +40,7 @@ const HistoryComponent: React.FC = () => {
 
   if (error) {
     return (
-      <div className="grain min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+      <div className="grain min-h-screen flex items-center justify-center p-4 bg-rose-50 dark:bg-stone-900">
         <div className="rounded-2xl p-8 max-w-md text-center bg-white/80 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 shadow-xl">
           <span className="text-4xl mb-3 block">💔</span>
           <h3 className="font-display text-xl font-semibold mb-2 text-rose-900 dark:text-rose-100">Error al cargar</h3>
@@ -51,10 +51,10 @@ const HistoryComponent: React.FC = () => {
   }
 
   return (
-    <div className="grain min-h-screen bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+    <div className="grain min-h-screen bg-rose-50 dark:bg-stone-900">
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-rose-50/95 dark:bg-stone-950/95 border-b border-rose-200/60 dark:border-rose-900/60 backdrop-blur-md shadow-sm shadow-rose-900/8 dark:shadow-rose-900/30">
+      <header className="sticky top-0 z-50 bg-rose-50/95 dark:bg-stone-900/95 border-b border-rose-200/60 dark:border-rose-900/60 backdrop-blur-md shadow-sm shadow-rose-900/8 dark:shadow-rose-900/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center gap-4">
             <Link to="/dashboard"
@@ -114,9 +114,9 @@ const HistoryComponent: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4">
               {history.map((ticket, i) => (
-                <div key={ticket.id} className="animate-fade-up" style={{ animationDelay: `${i * 0.06}s` }}>
+                <div key={ticket.id} className="animate-fade-up px-[14px]" style={{ animationDelay: `${i * 0.06}s` }}>
                   <TicketCardComponent ticket={ticket} userRole={userRole || 'novia'} onAction={() => {}} />
                 </div>
               ))}

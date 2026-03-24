@@ -158,8 +158,8 @@ const TicketListComponent: React.FC<TicketListComponentProps> = ({
               </div>
             ))}
 
-            {/* Trailing spacer so last card doesn't hug the edge */}
-            <div className="flex-shrink-0 w-4" aria-hidden="true" />
+            {/* Trailing spacer — extra room after last slide */}
+            <div className="flex-shrink-0 w-2" aria-hidden="true" />
           </div>
 
           {/* ── Dot indicators + mobile arrows ── */}

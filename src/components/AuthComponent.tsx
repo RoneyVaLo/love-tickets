@@ -79,7 +79,7 @@ export function AuthComponent() {
   `;
 
   return (
-    <div className="grain min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+    <div className="grain min-h-screen flex items-center justify-center px-4 py-12 bg-rose-50 dark:bg-stone-950">
       <FloatingDecorations />
 
       <div className="w-full max-w-md relative z-10">

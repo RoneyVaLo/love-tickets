@@ -7,28 +7,27 @@ interface TicketCardComponentProps {
   onAction: (action: TicketAction) => void;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; icon: string; classes: string }> = {
-  pendiente:  { label: 'Pendiente',  icon: '🎀', classes: 'bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-200 border border-sky-200 dark:border-sky-700' },
-  canjeado:   { label: 'Canjeado',   icon: '🌹', classes: 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-200 border border-amber-200 dark:border-amber-700' },
-  completado: { label: 'Completado', icon: '✨', classes: 'bg-violet-50 dark:bg-violet-900/40 text-violet-700 dark:text-violet-200 border border-violet-200 dark:border-violet-700' },
-  confirmado: { label: 'Confirmado', icon: '💚', classes: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700' },
-  propuesto:  { label: 'Propuesto',  icon: '💌', classes: 'bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-200 border border-rose-200 dark:border-rose-700' },
+const STATUS_CONFIG: Record<string, { label: string; accent: string; border: string; bg: string; darkBg: string; darkBorder: string; darkText: string; text: string }> = {
+  pendiente:  { label: 'Pendiente',  accent: 'text-sky-600 dark:text-sky-300',    border: 'border-sky-300 dark:border-sky-600',       bg: 'bg-sky-50',     darkBg: 'dark:bg-sky-950/60',    text: 'text-sky-700',    darkText: 'dark:text-sky-100',    darkBorder: '' },
+  canjeado:   { label: 'Canjeado',   accent: 'text-amber-600 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-600',   bg: 'bg-amber-50',   darkBg: 'dark:bg-amber-950/60',  text: 'text-amber-700',  darkText: 'dark:text-amber-100',  darkBorder: '' },
+  completado: { label: 'Completado', accent: 'text-violet-600 dark:text-violet-300',border: 'border-violet-300 dark:border-violet-600', bg: 'bg-violet-50',  darkBg: 'dark:bg-violet-950/60', text: 'text-violet-700', darkText: 'dark:text-violet-100', darkBorder: '' },
+  confirmado: { label: 'Confirmado', accent: 'text-emerald-600 dark:text-emerald-300',border:'border-emerald-300 dark:border-emerald-600',bg:'bg-emerald-50', darkBg:'dark:bg-emerald-950/60', text:'text-emerald-700', darkText:'dark:text-emerald-100', darkBorder:'' },
+  propuesto:  { label: 'Propuesto',  accent: 'text-rose-600 dark:text-rose-300',   border: 'border-rose-300 dark:border-rose-600',     bg: 'bg-rose-50',    darkBg: 'dark:bg-rose-950/60',   text: 'text-rose-700',   darkText: 'dark:text-rose-100',   darkBorder: '' },
 };
 
-/**
- * TicketCardComponent — Romantic ticket card
- * Requirements: 2.2, 8.3, 10.1–10.4
- */
 const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userRole, onAction }) => {
   const formatDate = (timestamp: any): string => {
     if (!timestamp) return '—';
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     } catch { return '—'; }
   };
 
-  const status = STATUS_CONFIG[ticket.status] ?? { label: ticket.status, icon: '•', classes: 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700' };
+  const cfg = STATUS_CONFIG[ticket.status] ?? {
+    label: ticket.status, accent: 'text-stone-500', border: 'border-stone-300 dark:border-stone-600',
+    bg: 'bg-stone-50', darkBg: 'dark:bg-stone-900/60', text: 'text-stone-600', darkText: 'dark:text-stone-200', darkBorder: '',
+  };
 
   const timestamps: { label: string; value: any }[] = [
     { label: 'Creado',     value: ticket.timestamps.createdAt },
@@ -43,43 +42,43 @@ const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userR
     if (userRole === 'novia' && ticket.status === 'pendiente') {
       return (
         <button onClick={() => onAction('redeem')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-md shadow-rose-700/25 hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200">
-          <span>🎀</span> Canjear Ticket
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-sans font-bold text-xs tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-sm hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+          Canjear
         </button>
       );
     }
     if (userRole === 'usuario_principal' && ticket.status === 'canjeado') {
       return (
         <button onClick={() => onAction('complete')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-md shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all duration-200">
-          <span>✨</span> Marcar Completado
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-sans font-bold text-xs tracking-wide bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+          Completar
         </button>
       );
     }
     if (userRole === 'novia' && ticket.status === 'completado') {
       return (
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 flex-col">
           <button onClick={() => onAction('confirm')}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-md shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-200">
-            <span>💚</span> Confirmar
+            className="flex-1 flex items-center justify-center px-2 py-2 rounded-lg font-sans font-bold text-xs bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            Confirmar
           </button>
           <button onClick={() => onAction('reject')}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 text-white shadow-md shadow-red-600/25 hover:-translate-y-0.5 transition-all duration-200">
-            <span>✕</span> Rechazar
+            className="flex-1 flex items-center justify-center px-2 py-2 rounded-lg font-sans font-bold text-xs bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 text-white shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            Rechazar
           </button>
         </div>
       );
     }
     if (userRole === 'usuario_principal' && ticket.status === 'propuesto') {
       return (
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-1.5">
           <button onClick={() => onAction('approve')}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-md shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-200">
-            <span>💚</span> Aprobar
+            className="flex-1 flex items-center justify-center px-2 py-2 rounded-lg font-sans font-bold text-xs bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            Aprobar
           </button>
           <button onClick={() => onAction('rejectProposal')}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-sans font-bold text-sm bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 text-white shadow-md shadow-red-600/25 hover:-translate-y-0.5 transition-all duration-200">
-            <span>✕</span> Rechazar
+            className="flex-1 flex items-center justify-center px-2 py-2 rounded-lg font-sans font-bold text-xs bg-gradient-to-r from-red-600 to-red-500 dark:from-red-500 dark:to-red-400 text-white shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            Rechazar
           </button>
         </div>
       );
@@ -90,53 +89,68 @@ const TicketCardComponent: React.FC<TicketCardComponentProps> = ({ ticket, userR
   const actions = renderActions();
 
   return (
-    <div className="rounded-2xl p-5 animate-fade-up bg-white/80 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-800 shadow-md shadow-rose-900/8 dark:shadow-rose-900/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-900/12 dark:hover:shadow-rose-900/40 transition-all duration-300 backdrop-blur-sm">
+    <div
+      className={`ticket-shape ${cfg.accent} ${cfg.bg} ${cfg.darkBg} ${cfg.border} animate-fade-up
+        relative flex w-full rounded-xl border-2
+        shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300`}
+    >
+      {/* ── Left: main body ── */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-5 min-w-0">
+        {/* "Vale Por" label */}
+        <p className="font-sans text-[0.65rem] font-bold uppercase tracking-[0.18em] opacity-50 mb-1 select-none">
+          Vale Por
+        </p>
 
-      {/* Status badge */}
-      <div className="mb-3">
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-sans text-xs font-bold uppercase tracking-wider ${status.classes}`}>
-          <span>{status.icon}</span>
-          {status.label}
-        </span>
+        {/* Description — the big title */}
+        <h3 className={`font-display font-bold leading-tight ${cfg.text} ${cfg.darkText} text-lg sm:text-xl break-words`}>
+          {ticket.description}
+        </h3>
+
+        {/* Decorative lines (from original design) */}
+        <div className="mt-3 space-y-1.5">
+          <div className="h-[3px] w-28 rounded-full opacity-20 bg-current" />
+          <div className="h-[3px] w-16 rounded-full opacity-20 bg-current" />
+        </div>
       </div>
 
-      {/* Description */}
-      <p className="font-serif text-[1.0625rem] leading-relaxed mb-4 text-stone-800 dark:text-rose-50">
-        {ticket.description}
-      </p>
+      {/* ── Dashed divider ── */}
+      <div className="self-stretch w-px border-r-2 border-dashed border-current opacity-30 my-3" />
 
-      {/* Timestamps */}
-      {timestamps.length > 0 && (
-        <div className="mb-4 space-y-1">
-          {timestamps.map(({ label, value }) => (
-            <div key={label} className="flex items-center gap-2 text-xs">
-              <span className="text-amber-400 dark:text-amber-400 text-[0.6rem]">✦</span>
-              <span className="font-sans font-bold uppercase tracking-wider text-[0.7rem] text-stone-500 dark:text-rose-300">{label}:</span>
-              <span className="font-serif italic text-stone-500 dark:text-rose-200">{formatDate(value)}</span>
-            </div>
-          ))}
+      {/* ── Right: stub ── */}
+      <div className="w-28 flex-shrink-0 flex flex-col justify-between px-3 py-4 gap-2">
+        {/* Status badge */}
+        <div className="text-center">
+          <span className={`inline-block font-sans text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${cfg.border} ${cfg.text} ${cfg.darkText} opacity-90`}>
+            {cfg.label}
+          </span>
         </div>
-      )}
 
-      {/* Rejection reason */}
-      {ticket.rejectionReason && (
-        <div className="mb-4 px-3 py-2 rounded-xl text-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200">
-          <span className="font-sans font-bold text-xs uppercase tracking-wider">Motivo de rechazo: </span>
-          <span className="font-serif italic">{ticket.rejectionReason}</span>
-        </div>
-      )}
-
-      {/* Actions */}
-      {actions && (
-        <>
-          <div className="flex items-center gap-3 my-4 text-amber-500 dark:text-amber-400">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
-            <span className="text-[0.6rem]">✦</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+        {/* Timestamps */}
+        {timestamps.length > 0 && (
+          <div className="space-y-0.5">
+            {timestamps.slice(0, 2).map(({ label, value }) => (
+              <div key={label} className="text-center">
+                <span className="block font-sans font-bold uppercase tracking-wider text-[0.55rem] opacity-40">
+                  {label}
+                </span>
+                <span className="block font-serif italic text-[0.6rem] opacity-60">
+                  {formatDate(value)}
+                </span>
+              </div>
+            ))}
           </div>
-          {actions}
-        </>
-      )}
+        )}
+
+        {/* Rejection reason (compact) */}
+        {ticket.rejectionReason && (
+          <p className="font-serif italic text-[0.6rem] text-red-600 dark:text-red-400 text-center leading-tight opacity-80">
+            {ticket.rejectionReason}
+          </p>
+        )}
+
+        {/* Actions */}
+        {actions && <div className="mt-auto">{actions}</div>}
+      </div>
     </div>
   );
 };

@@ -12,10 +12,6 @@ interface DashboardComponentProps {
   addNotification?: (message: string, type?: NotificationType) => void;
 }
 
-/**
- * DashboardComponent — Romantic main dashboard
- * Requirements: 2.1, 4.1, 5.1, 6.1, 7.1, 8.1, 10.1–10.4
- */
 const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification }) => {
   const { user, userRole, signOut } = useAuth();
   const navigate = useNavigate();
@@ -55,14 +51,16 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
     setShowCreateTicket(false);
   };
 
+  const BG = 'grain min-h-screen bg-rose-50 dark:bg-stone-900';
+  const isNovia = userRole === 'novia';
+  const isUsuarioPrincipal = userRole === 'usuario_principal';
+
   if (loading) {
     return (
-      <div className="grain min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+      <div className={BG + ' flex items-center justify-center'}>
         <div className="text-center animate-fade-in">
           <div className="w-12 h-12 rounded-full border-4 border-rose-200 dark:border-rose-700 border-t-rose-600 dark:border-t-rose-300 animate-spin-slow mx-auto mb-4" />
-          <p className="font-serif italic text-lg text-stone-400 dark:text-rose-300">
-            Cargando tus tickets...
-          </p>
+          <p className="font-serif italic text-lg text-stone-400 dark:text-rose-300">Cargando tus tickets...</p>
         </div>
       </div>
     );
@@ -70,7 +68,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
 
   if (error) {
     return (
-      <div className="grain min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+      <div className={BG + ' flex items-center justify-center p-4'}>
         <div className="rounded-2xl p-8 max-w-md text-center bg-white/80 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 shadow-xl">
           <span className="text-4xl mb-3 block">💔</span>
           <h3 className="font-display text-xl font-semibold mb-2 text-rose-900 dark:text-rose-100">Algo salió mal</h3>
@@ -80,18 +78,12 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
     );
   }
 
-  const isNovia = userRole === 'novia';
-  const isUsuarioPrincipal = userRole === 'usuario_principal';
-
   return (
-    <div className="grain min-h-screen bg-gradient-to-br from-rose-50 via-amber-50/30 to-rose-100 dark:from-stone-950 dark:via-rose-950/50 dark:to-stone-900">
+    <div className={BG}>
 
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-rose-50/95 dark:bg-stone-950/95 border-b border-rose-200/60 dark:border-rose-900/60 backdrop-blur-md shadow-sm shadow-rose-900/8 dark:shadow-rose-900/30">
+      <header className="sticky top-0 z-50 bg-rose-50/95 dark:bg-stone-900/95 border-b border-rose-200/60 dark:border-rose-900/60 backdrop-blur-md shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between gap-4">
-
-            {/* Brand */}
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-2xl animate-pulse-soft flex-shrink-0 text-rose-600 dark:text-rose-300">♥</span>
               <div className="min-w-0">
@@ -108,8 +100,6 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
                 </div>
               </div>
             </div>
-
-            {/* Nav */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <ThemeSwitcher />
               <Link to="/history"
@@ -121,7 +111,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
                 <span>📜</span>
               </Link>
               <button onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-sans text-sm bg-transparent border border-transparent text-stone-400 dark:text-rose-300 hover:bg-rose-100/60 dark:hover:bg-rose-900/40 hover:text-rose-700 dark:hover:text-rose-100 transition-all duration-200">
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-sans text-sm text-stone-400 dark:text-rose-300 hover:bg-rose-100/60 dark:hover:bg-rose-900/40 hover:text-rose-700 dark:hover:text-rose-100 transition-all duration-200">
                 <span>↩</span>
                 <span className="hidden sm:inline">Salir</span>
               </button>
@@ -130,10 +120,8 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
         </div>
       </header>
 
-      {/* ── Main ── */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
-        {/* Action error */}
         {actionError && (
           <div className="flex items-start gap-3 px-4 py-3 rounded-xl text-sm mb-6 animate-slide-down bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300" role="alert">
             <span className="flex-shrink-0 text-base">⚠</span>
@@ -142,7 +130,6 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
           </div>
         )}
 
-        {/* ── Novia view ── */}
         {isNovia && (
           <div className="space-y-10">
             <section className="animate-fade-up">
@@ -153,7 +140,7 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
                 </div>
                 {!showCreateTicket && (
                   <button onClick={() => setShowCreateTicket(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-sans font-bold text-sm tracking-wide bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-600 dark:to-rose-400 text-white shadow-md shadow-rose-700/25 hover:shadow-rose-700/40 hover:-translate-y-0.5 transition-all duration-200">
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-sans font-bold text-sm tracking-wide bg-rose-600 dark:bg-rose-500 text-white shadow-md hover:bg-rose-700 dark:hover:bg-rose-400 hover:-translate-y-0.5 transition-all duration-200">
                     <span>+</span> Nuevo
                   </button>
                 )}
@@ -169,11 +156,10 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
               )}
             </section>
 
-            {/* Divider */}
             <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-amber-200/60 dark:bg-amber-500/40" />
               <span className="text-base">✦</span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-amber-200/60 dark:bg-amber-500/40" />
             </div>
 
             <section className="animate-fade-up delay-100">
@@ -181,9 +167,9 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
             </section>
 
             <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-amber-200/60 dark:bg-amber-500/40" />
               <span className="text-base">✦</span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-amber-200/60 dark:bg-amber-500/40" />
             </div>
 
             <section className="animate-fade-up delay-200">
@@ -192,7 +178,6 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
           </div>
         )}
 
-        {/* ── Usuario Principal view ── */}
         {isUsuarioPrincipal && (
           <div className="space-y-10">
             <section className="animate-fade-up">
@@ -200,9 +185,9 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
             </section>
 
             <div className="flex items-center gap-3 text-amber-500 dark:text-amber-400">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-amber-200/60 dark:bg-amber-500/40" />
               <span className="text-base">✦</span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-200/60 dark:via-amber-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-amber-200/60 dark:bg-amber-500/40" />
             </div>
 
             <section className="animate-fade-up delay-100">
@@ -211,9 +196,8 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ addNotification
           </div>
         )}
 
-        {/* Unknown role */}
         {!isNovia && !isUsuarioPrincipal && (
-          <div className="flex flex-col items-center justify-center py-12 px-8 text-center rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20">
+          <div className="flex flex-col items-center justify-center py-12 px-8 text-center rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-900 bg-white/50 dark:bg-rose-950/20">
             <span className="text-4xl mb-3">🤔</span>
             <p className="font-serif italic text-stone-400 dark:text-rose-300">Rol de usuario no reconocido</p>
           </div>
