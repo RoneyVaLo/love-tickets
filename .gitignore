@@ -26,3 +26,4 @@ pnpm-lock.yaml
 *.sw?
 
 .kiro
+package-lock.json
