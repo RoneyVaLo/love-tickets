@@ -59,6 +59,42 @@
   background-size: 128px 128px;
 }
 
+/* ─── Carousel ──────────────────────────────────────────────── */
+@keyframes carouselIn {
+  from { opacity: 0; transform: translateX(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+.animate-carousel-in { animation: carouselIn 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+
+.carousel-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  padding-bottom: 4px; /* prevent shadow clip */
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+
+.carousel-slide {
+  flex: 0 0 min(88vw, 340px);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .carousel-slide { flex: 0 0 min(72vw, 360px); }
+}
+@media (min-width: 1024px) {
+  .carousel-slide { flex: 0 0 320px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-carousel-in { animation: none; }
+  .carousel-track { scroll-behavior: auto; }
+}
+
 /* ─── Custom scrollbar ──────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f5e9d8; }
