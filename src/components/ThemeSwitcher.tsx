@@ -1,6 +1,7 @@
+import React from 'react';
 import { useTheme } from '../hooks/useTheme';
 
-export function ThemeSwitcher(): JSX.Element {
+export function ThemeSwitcher(): React.JSX.Element {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
