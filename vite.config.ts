@@ -21,6 +21,20 @@ export default defineConfig({
         orientation: "portrait",
         scope: "/",
         start_url: "/",
+        screenshots: [
+          {
+            src: "/screenshots/728x410.jpg",
+            sizes: "728x410",
+            type: "image/jpeg",
+            form_factor: "wide",
+          },
+          {
+            src: "/screenshots/736x1309.jpg",
+            sizes: "736x1309",
+            type: "image/jpeg",
+            form_factor: "narrow",
+          },
+        ],
         icons: [
           {
             src: "/icons/icon-192x192.png",
